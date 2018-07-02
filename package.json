@@ -1,8 +1,9 @@
 {
     "name": "3h-refactor",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A refactor lib.",
     "main": "dist/lib.js",
+    "bin": "dist/cli.js",
     "scripts": {
         "prebuild": "del /q dist\\*.* typings\\*.*",
         "build": "tsc",
