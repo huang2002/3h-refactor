@@ -1,0 +1,35 @@
+{
+    "name": "3h-refactor",
+    "version": "1.0.0",
+    "description": "A refactor lib.",
+    "main": "dist/lib.js",
+    "scripts": {
+        "prebuild": "del /q dist\\*.* typings\\*.*",
+        "build": "tsc",
+        "postbuild": "del /q typings\\cli.d.ts",
+        "test": "node dist/cli"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/huang2002/3h-refactor.git"
+    },
+    "keywords": [
+        "refactor",
+        "rename",
+        "move",
+        "reference",
+        "module",
+        "import",
+        "export",
+        "3h"
+    ],
+    "author": "3h",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/huang2002/3h-refactor/issues"
+    },
+    "homepage": "https://github.com/huang2002/3h-refactor#readme",
+    "dependencies": {
+        "@types/node": "^10.5.1"
+    }
+}
