@@ -30,10 +30,11 @@ const defaultOptions = {
         /\.tsx$/i
     ],
     importStatements: [
-        /^import\s*(?:\{.*\}|\*\s*as\s+\w+|\s\w+)\s*from\s*["'].+["'];?$/gm,
-        /^import\s*\w+\s*=\s*require\(\s*["'].+["']\s*\);?$/gm,
-        /import\(\s*["'].+["']\s*\)/gm,
-        /import\s*["'].+["']\s*;/gm
+        /import\s*(?:\{.*\}|\*\s*as\s+\w+|\s\w+)\s*from\s*["'].+["'];?/g,
+        /export\s*(?:\{.*\}|\*\s*)\s*from\s*["'].+["'];?/g,
+        /(?:import\s*\w+\s*=\s*)?require\(\s*["'].+["']\s*\);?/g,
+        /import\(\s*["'].+["']\s*\)/g,
+        /import\s*["'].+["']\s*;/g
     ],
     preserveExt: [
         // /js$/i

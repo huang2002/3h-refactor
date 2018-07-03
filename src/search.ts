@@ -1,7 +1,7 @@
 import { readdir, stat } from "fs";
 import { join } from "path";
 
-export = function search(path: string, callback: (err: Error | null, files: string[]) => void) {
+function search(path: string, callback: (err: Error | null, files: string[]) => void) {
     readdir(path, (err, items) => {
         if (err) {
             callback(err, []);
@@ -50,3 +50,5 @@ export = function search(path: string, callback: (err: Error | null, files: stri
         }
     });
 }
+
+export = search;

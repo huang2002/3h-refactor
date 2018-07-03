@@ -1,7 +1,7 @@
 "use strict";
 const fs_1 = require("fs");
 const path_1 = require("path");
-module.exports = function search(path, callback) {
+function search(path, callback) {
     fs_1.readdir(path, (err, items) => {
         if (err) {
             callback(err, []);
@@ -48,4 +48,5 @@ module.exports = function search(path, callback) {
             });
         }
     });
-};
+}
+module.exports = search;

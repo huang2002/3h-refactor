@@ -1,2 +1,2 @@
-declare const _default: (path: string, callback: (err: Error | null, files: string[]) => void) => void;
-export = _default;
+declare function search(path: string, callback: (err: Error | null, files: string[]) => void): void;
+export = search;
