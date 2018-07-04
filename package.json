@@ -1,6 +1,6 @@
 {
     "name": "3h-refactor",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "A refactor lib.",
     "main": "dist/lib.js",
     "bin": "dist/cli.js",
@@ -30,7 +30,7 @@
         "url": "https://github.com/huang2002/3h-refactor/issues"
     },
     "homepage": "https://github.com/huang2002/3h-refactor#readme",
-    "dependencies": {
+    "devDependencies": {
         "@types/node": "^10.5.1"
     }
 }
