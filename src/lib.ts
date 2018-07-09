@@ -1,6 +1,7 @@
 import { resolve, relative, normalize, join, dirname, basename, extname, sep } from "path";
 import { readFile, writeFile, existsSync, rename, mkdir } from "fs";
 import search = require('./search');
+import defaultOptions = require('./defaultOptions');
 
 const thrower = (err: Error | null) => {
     if (err) {
@@ -21,26 +22,6 @@ interface Replacement extends Reference {
     dist: string;
 }
 
-const defaultOptions = {
-    include: [
-        /\.js$/i,
-        /\.jsx$/i,
-        /\.mjs$/i,
-        /\.ts$/i,
-        /\.tsx$/i
-    ],
-    importStatements: [
-        /import\s*(?:\{.*\}|\*\s*as\s+\w+|\s\w+)\s*from\s*["'].+["'];?/g,
-        /export\s*(?:\{.*\}|\*\s*)\s*from\s*["'].+["'];?/g,
-        /(?:import\s*\w+\s*=\s*)?require\(\s*["'].+["']\s*\);?/g,
-        /import\(\s*["'].+["']\s*\)/g,
-        /import\s*["'].+["']\s*;/g
-    ],
-    preserveExt: [
-        // /js$/i
-    ] as RegExp[]
-};
-
 interface RefactorOptions {
     basePath?: string;
     encoding?: string;
@@ -48,6 +29,7 @@ interface RefactorOptions {
     importStatements?: RegExp[];
     useForwardSlash?: boolean;
     preserveExt?: RegExp[];
+    ignoreExt?: RegExp[];
 }
 
 class Refactor implements Required<RefactorOptions> {
@@ -64,6 +46,7 @@ class Refactor implements Required<RefactorOptions> {
     importStatements = defaultOptions.importStatements;
     useForwardSlash = true;
     preserveExt = defaultOptions.preserveExt;
+    ignoreExt = defaultOptions.ignoreExt;
 
     searchIncludedFiles(callback: (err: Error | null, files: string[]) => void) {
         const { basePath } = this;
@@ -97,9 +80,8 @@ class Refactor implements Required<RefactorOptions> {
                     const statements = content.match(importStatement);
                     if (statements) {
                         statements.forEach(statement => {
-                            statement.match(/["'](.+)["']/g);
-                            const path = RegExp.$1;
-                            ans.push({ statement, src: path });
+                            statement.match(importStatement);
+                            ans.push({ statement, src: RegExp.$1 });
                         });
                     }
                 });
@@ -151,6 +133,7 @@ class Refactor implements Required<RefactorOptions> {
                                 errFlag = true;
                             } else {
 
+                                const { ignoreExt } = this;
                                 statements.forEach(statement => {
 
                                     const thatSrc = statement.src,
@@ -160,7 +143,10 @@ class Refactor implements Required<RefactorOptions> {
                                         thatSrc.startsWith("\.") &&
                                         dirname(resolve(join(fileDir, thatSrc))) === resolvedSrcDir &&
                                         basename(thatSrc, thatSrcExt) === resolvedSrcFilename &&
-                                        (thatSrcExt === '' || thatSrcExt === srcExt)
+                                        (thatSrcExt === srcExt || (
+                                            thatSrcExt === '' &&
+                                            ignoreExt.some(ie => ie.test(srcExt))
+                                        ))
                                     ) {
                                         ans.push({ ...statement, file });
                                     }
@@ -244,14 +230,14 @@ class Refactor implements Required<RefactorOptions> {
                 });
             }
 
-            const changedFiles: string[] = [],
+            const changedFiles = new Set<string>(),
                 actions: (() => void)[] = [];
             function next() {
                 const action = actions.shift();
                 if (action) {
                     action();
                 } else {
-                    callback(null, changedFiles);
+                    callback(null, [...changedFiles]);
                 }
             }
 
@@ -262,7 +248,9 @@ class Refactor implements Required<RefactorOptions> {
                     error(err);
                 } else {
 
-                    changedFiles.push(...replacements.map(replacement => replacement.file));
+                    replacements.forEach(replacement => {
+                        changedFiles.add(replacement.file);
+                    });
 
                     replacements.forEach(({ file, statement, src, dist }) => {
 
@@ -302,19 +290,21 @@ class Refactor implements Required<RefactorOptions> {
 
                                 if (statements.length > 0) {
 
-                                    changedFiles.push(srcFile);
+                                    changedFiles.add(srcFile);
 
                                     statements.forEach(({ statement, src }) => {
-                                        content = content.replace(
-                                            statement,
-                                            statement.replace(
-                                                src,
-                                                this.formatPath(
-                                                    target,
-                                                    join(srcFileDir, src)
+                                        if (existsSync(join(srcFileDir, src))) {
+                                            content = content.replace(
+                                                statement,
+                                                statement.replace(
+                                                    src,
+                                                    this.formatPath(
+                                                        target,
+                                                        join(srcFileDir, src)
+                                                    )
                                                 )
-                                            )
-                                        );
+                                            );
+                                        }
                                     });
 
                                     writeFile(srcFile, content, encoding, err => {

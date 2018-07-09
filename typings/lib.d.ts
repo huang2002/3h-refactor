@@ -15,6 +15,7 @@ interface RefactorOptions {
     importStatements?: RegExp[];
     useForwardSlash?: boolean;
     preserveExt?: RegExp[];
+    ignoreExt?: RegExp[];
 }
 declare class Refactor implements Required<RefactorOptions> {
     constructor(options?: RefactorOptions);
@@ -22,6 +23,7 @@ declare class Refactor implements Required<RefactorOptions> {
         include: RegExp[];
         importStatements: RegExp[];
         preserveExt: RegExp[];
+        ignoreExt: RegExp[];
     };
     basePath: string;
     encoding: string;
@@ -29,6 +31,7 @@ declare class Refactor implements Required<RefactorOptions> {
     importStatements: RegExp[];
     useForwardSlash: boolean;
     preserveExt: RegExp[];
+    ignoreExt: RegExp[];
     searchIncludedFiles(callback: (err: Error | null, files: string[]) => void): this;
     searchImportStatements(file: string, callback: (err: Error | null, statements: Statement[], content: string) => void): this;
     searchReferences(src: string, callback: (err: Error | null, references: Reference[]) => void): this;

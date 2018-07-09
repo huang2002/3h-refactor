@@ -1,6 +1,6 @@
 {
     "name": "3h-refactor",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "description": "A refactor lib.",
     "main": "dist/lib.js",
     "bin": "dist/cli.js",
@@ -20,8 +20,14 @@
         "move",
         "reference",
         "module",
+        "require",
+        "html",
         "import",
         "export",
+        "script",
+        "src",
+        "dest",
+        "dist",
         "3h"
     ],
     "author": "3h",

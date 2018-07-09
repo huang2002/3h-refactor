@@ -1,4 +1,5 @@
-import './b';
+import './b.mjs';
+import '???';
 
 require('./c');
 

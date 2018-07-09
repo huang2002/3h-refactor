@@ -22,16 +22,20 @@ The lib supports most common import/export statements out of the box.
 - `export * from "...";`
 - `import ___ = require("...");`
 - `require("...")`
+- `<script src="..."></script>`
 
 ## File formats
 
 Files with following extensions are included by default.
 
-- `js`
-- `jsx`
-- `mjs`
-- `ts`
-- `tsx`
+- `.js`
+- `.jsx`
+- `.mjs`
+- `.json`
+- `.ts`
+- `.tsx`
+- `.html`
+- `.htm`
 
 # Usage
 

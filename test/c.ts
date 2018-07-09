@@ -1,5 +1,5 @@
 import { d } from "./d";
-import a = require("./a");
+import a = require("./a.js");
 
 d;
 a.a;

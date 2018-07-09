@@ -2,29 +2,11 @@
 const path_1 = require("path");
 const fs_1 = require("fs");
 const search = require("./search");
+const defaultOptions = require("./defaultOptions");
 const thrower = (err) => {
     if (err) {
         throw err;
     }
-};
-const defaultOptions = {
-    include: [
-        /\.js$/i,
-        /\.jsx$/i,
-        /\.mjs$/i,
-        /\.ts$/i,
-        /\.tsx$/i
-    ],
-    importStatements: [
-        /import\s*(?:\{.*\}|\*\s*as\s+\w+|\s\w+)\s*from\s*["'].+["'];?/g,
-        /export\s*(?:\{.*\}|\*\s*)\s*from\s*["'].+["'];?/g,
-        /(?:import\s*\w+\s*=\s*)?require\(\s*["'].+["']\s*\);?/g,
-        /import\(\s*["'].+["']\s*\)/g,
-        /import\s*["'].+["']\s*;/g
-    ],
-    preserveExt: [
-    // /js$/i
-    ]
 };
 class Refactor {
     constructor(options = {}) {
@@ -34,6 +16,7 @@ class Refactor {
         this.importStatements = defaultOptions.importStatements;
         this.useForwardSlash = true;
         this.preserveExt = defaultOptions.preserveExt;
+        this.ignoreExt = defaultOptions.ignoreExt;
         Object.assign(this, options);
     }
     searchIncludedFiles(callback) {
@@ -61,9 +44,8 @@ class Refactor {
                     const statements = content.match(importStatement);
                     if (statements) {
                         statements.forEach(statement => {
-                            statement.match(/["'](.+)["']/g);
-                            const path = RegExp.$1;
-                            ans.push({ statement, src: path });
+                            statement.match(importStatement);
+                            ans.push({ statement, src: RegExp.$1 });
                         });
                     }
                 });
@@ -97,12 +79,14 @@ class Refactor {
                                 errFlag = true;
                             }
                             else {
+                                const { ignoreExt } = this;
                                 statements.forEach(statement => {
                                     const thatSrc = statement.src, thatSrcExt = path_1.extname(thatSrc);
                                     if (thatSrc.startsWith("\.") &&
                                         path_1.dirname(path_1.resolve(path_1.join(fileDir, thatSrc))) === resolvedSrcDir &&
                                         path_1.basename(thatSrc, thatSrcExt) === resolvedSrcFilename &&
-                                        (thatSrcExt === '' || thatSrcExt === srcExt)) {
+                                        (thatSrcExt === srcExt || (thatSrcExt === '' &&
+                                            ignoreExt.some(ie => ie.test(srcExt))))) {
                                         ans.push({ ...statement, file });
                                     }
                                 });
@@ -164,14 +148,14 @@ class Refactor {
                     }
                 });
             }
-            const changedFiles = [], actions = [];
+            const changedFiles = new Set(), actions = [];
             function next() {
                 const action = actions.shift();
                 if (action) {
                     action();
                 }
                 else {
-                    callback(null, changedFiles);
+                    callback(null, [...changedFiles]);
                 }
             }
             const { encoding } = this;
@@ -180,7 +164,9 @@ class Refactor {
                     error(err);
                 }
                 else {
-                    changedFiles.push(...replacements.map(replacement => replacement.file));
+                    replacements.forEach(replacement => {
+                        changedFiles.add(replacement.file);
+                    });
                     replacements.forEach(({ file, statement, src, dist }) => {
                         actions.push(() => {
                             fs_1.readFile(file, encoding, (err, data) => {
@@ -208,9 +194,11 @@ class Refactor {
                             }
                             else {
                                 if (statements.length > 0) {
-                                    changedFiles.push(srcFile);
+                                    changedFiles.add(srcFile);
                                     statements.forEach(({ statement, src }) => {
-                                        content = content.replace(statement, statement.replace(src, this.formatPath(target, path_1.join(srcFileDir, src))));
+                                        if (fs_1.existsSync(path_1.join(srcFileDir, src))) {
+                                            content = content.replace(statement, statement.replace(src, this.formatPath(target, path_1.join(srcFileDir, src))));
+                                        }
                                     });
                                     fs_1.writeFile(srcFile, content, encoding, err => {
                                         if (err) {
