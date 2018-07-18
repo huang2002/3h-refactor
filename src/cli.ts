@@ -1,4 +1,4 @@
-#! node
+#!/usr/bin/env node
 import { existsSync } from "fs";
 import { relative } from "path";
 import Refactor = require('./lib');
