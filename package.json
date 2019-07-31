@@ -37,6 +37,7 @@
     },
     "homepage": "https://github.com/huang2002/3h-refactor#readme",
     "devDependencies": {
-        "@types/node": "^10.5.1"
+        "@types/node": "^10.5.1",
+        "typescript": "^3.5.3"
     }
 }
